@@ -94,6 +94,7 @@ class VideoProcess:
             frame_res = self.getVideoResolution(cap)# 2560 * 1440
             video_fps = self.getVideoFPS(cap)       
             image_res = (int(frame_res[0]/colums),int(frame_res[1]/rows)) # int(2.3)===>2 int(1.9) = 1
+            print("image resolution",image_res)
             image_width = image_res[0]
             image_height = image_res[1]
             
@@ -104,24 +105,28 @@ class VideoProcess:
             if (cap.isOpened()):
                 success,frame = cap.read()
                 if(success):
-                    frame = cv2.flip(frame,0)
+                    #frame = cv2.flip(frame,0)
+                    
                     if success:#(cv2.imwrite(tile_file_path+"/0.jpg",frame)):
-                        print("get a frame")
+                        cv2.imwrite(tile_file_path+"/complete.jpg",frame)
                         # divide the frames
                         tile_frame = []
                         for r in range(0,rows):
                             for c in range(0,colums-1):
                                 img = frame[r*image_height:r*image_height+image_height,c*image_width:c*image_width+image_width]
                                 tile_frame.append(img)
+                                print(img.shape)
                             # the last colum needs to be processed in different ways
-                            img_last_col = frame[r*image_height:r*(image_height)+image_height,c*image_width:]
+                            img_last_col = frame[r*image_height:r*image_height+image_height,c*image_width:frame_res[0]-1]
                             tile_frame.append(img_last_col)
-                        
+                            print(img_last_col.shape)
+                          
                         #save all the img
                         for i in range(0,len(tile_frame)):
-                            print(tile_file_path+"/%d.jpg"%i)
+                            #print(tile_file_path+"/%d.jpg"%i)
                             if(cv2.imwrite(tile_file_path+"/%d_tile.jpg"%i,tile_frame[i])):
                                #print("get a frame  ",i)
+                               pass
                             else:
                                 print("fail to get a frame tile")
                                 
