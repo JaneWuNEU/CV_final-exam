@@ -78,18 +78,21 @@ class VideoProcess:
         
         '''     
 
-    def divideSegmentIntoTiles(self,segment_path = None,tiles_path = None,rows = 6,colums = 12):
-            #1. get the location of the segment file
-            segment_path = "F:\project/dataset/vr\\Formated_Data\\Experiment_1\\video\\1-1-segment/3.mp4"
+    def divideSegmentIntoTiles(self,num,tiles_path = None,rows = 6,colums = 12):
+        
+            '''=============1. get the location of the segment file==========='''
+
+            segment_path = "F:\project/dataset/vr\\Formated_Data\\Experiment_1\\video\\1-1-segment/"+str(num)+".mp4"
             
-            #2. depend on the name of the segment file to create a file to put all the tiles
+            '''============2. depend on the name of the segment file to create a file to put all the tiles=========='''
+
             tile_file_path = segment_path.rpartition(".")[0]
             if(not os.path.isdir(tile_file_path)):
                 os.mkdir(tile_file_path)
             
-            #3. produce a series of VideoWriter Instances for different tiles
-            # and the name of each tile is X.mp4, X stands for its index within the whole segment
-            
+            '''==============3. produce a series of VideoWriter Instances for different tiles=============
+            and the name of each tile is X.mp4, X stands for its index within the whole segment
+            '''
             cap = cv2.VideoCapture(segment_path)         
             frame_res = self.getVideoResolution(cap)# 2560 * 1440
             video_fps = self.getVideoFPS(cap)       
@@ -97,65 +100,62 @@ class VideoProcess:
             image_width = image_res[0]
             image_height = image_res[1]
             
+            tile_video_pointer = []
+            last_colum_tile_video_pointer = []
             fourcc = cv2.VideoWriter_fourcc(*'XVID')
             
+            #tile-video pointer
+            for i in range(0,rows*(colums)):
+                if (i+1)%colums!=0:#non-last-colum 
+                    tile_video_pointer.append(cv2.VideoWriter(tile_file_path+"/"+str(i)+"_tile.mp4",fourcc,video_fps,image_res))
+                else:#last-colum 
+                    last_colum_tile_video_pointer.append(cv2.VideoWriter(tile_file_path+"/"+str(i)+"_tile.mp4",fourcc,video_fps,(frame_res[0]-image_res[0]*(colums-1),image_res[1])))
+        
             # the name of tiles
             #segmentPointer = cv2.VideoWriter(segment_path,fourcc,video_fps,frame_res)
             if (cap.isOpened()):
                 success,frame = cap.read()
-                if(success):
-                    frame = cv2.flip(frame,0)
-                    if success:#(cv2.imwrite(tile_file_path+"/0.jpg",frame)):
-                        print("get a frame")
+                while (success):
                         # divide the frames
                         tile_frame = []
                         for r in range(0,rows):
                             for c in range(0,colums-1):
-                                #img = frame[r*image_height:r*image_height+image_height,c*image_width:c*image_width+image_width]
-                                img = frame[c*image_width:c*image_width+image_width,r*image_height:r*image_height+image_height]
-                                tile_frame.append(img)
+                                try:
+                                    img = frame[r*image_height:r*image_height+image_height,c*image_width:c*image_width+image_width]                         
+                                except:
+                                    print("fail to get a frame ",frame)
+                                tile_frame.append(img)                                                                                                                   
                             # the last colum needs to be processed in different ways
-<<<<<<< HEAD
-                            #img_last_col = frame[r*image_height:r*image_height+image_height,c*image_width:frame_res[0]-1]
-                            img_last_col = frame[c*image_width:c*image_width:c*image_width+image_width,r*image_height:]
-=======
-                            img_last_col = frame[r*image_height:r*(image_height)+image_height,c*image_width:]
->>>>>>> parent of ff3cb8a... Update tile.py
+                            img_last_col = frame[r*image_height:r*image_height+image_height,(c+1)*image_width:]
                             tile_frame.append(img_last_col)
-                        
                         #save all the img
+                        index_a = 0
+                        index_b = 0
+                        
                         for i in range(0,len(tile_frame)):
-                            print(tile_file_path+"/%d.jpg"%i)
-                            if(cv2.imwrite(tile_file_path+"/%d_tile.jpg"%i,tile_frame[i])):
-                               #print("get a frame  ",i)
+                            if (i+1)%colums!=0:
+                                #print("i to a ",i,"  ",index_a)
+                                tile_video_pointer[index_a].write(tile_frame[i])
+                                index_a = index_a+1
                             else:
-                                print("fail to get a frame tile")
-                                
-                            
-                            
-                            
-                            
-                            
-                            
-                            
-                    else:
-                        print("fail to get a frame")
+                                #print("i to b ",i,"  ",index_b)
+                                last_colum_tile_video_pointer[index_b].write(tile_frame[i])
+                                index_b = index_b+1
 
-                else:
-                    print("fail to read frames")
+                        tile_frame.clear()
+                        success,frame = cap.read()
+                        #count=count+1
+ 
             else:
-                print("fail to open the videocapture")
-            '''
-            success,frame = 
-            while
-            tile_index = 0
-            for r in range(0,rows):
-                for c in range(0,colums-1):# 最后一列需要特殊处理
-                    tile_name = tile_file_path+"/"+str(tile_index)+"_tile.mp4"
-                    tile_index=tile_index+1
-                    tile = cv2.VideoWriter(tile_name,fourcc,video_fps,image_res)
-           ''' 
-            
+                print("fail to open the videocapture",num)
+            for i in range(0,len(tile_video_pointer)):
+                tile_video_pointer[i].release()
+                #print("save a")
+            for i in range(0,len(last_colum_tile_video_pointer)):
+                last_colum_tile_video_pointer[i].release()
+                #print("save b")
+            cap.release()
+  
             
             
             
@@ -168,5 +168,6 @@ class VideoProcess:
 video = VideoProcess()
 #print(result)
 #video.divideVedioIntoChips(video_path)
-video.divideSegmentIntoTiles()
+for i in range(1,165):
+   video.divideSegmentIntoTiles(i)
         
