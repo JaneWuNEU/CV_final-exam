@@ -113,11 +113,13 @@ class VideoProcess:
                         tile_frame = []
                         for r in range(0,rows):
                             for c in range(0,colums-1):
-                                img = frame[r*image_height:r*image_height+image_height,c*image_width:c*image_width+image_width]
+                                #img = frame[r*image_height:r*image_height+image_height,c*image_width:c*image_width+image_width]
+                                img = frame[c*image_width:c*image_width+image_width,r*image_height:r*image_height+image_height]
                                 tile_frame.append(img)
                                 print(img.shape)
                             # the last colum needs to be processed in different ways
-                            img_last_col = frame[r*image_height:r*image_height+image_height,c*image_width:frame_res[0]-1]
+                            #img_last_col = frame[r*image_height:r*image_height+image_height,c*image_width:frame_res[0]-1]
+                            img_last_col = frame[c*image_width:c*image_width:c*image_width+image_width,r*image_height:]
                             tile_frame.append(img_last_col)
                             print(img_last_col.shape)
                           
