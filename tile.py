@@ -157,17 +157,27 @@ class VideoProcess:
             cap.release()
   
             
-            
-            
-            
-            
     def divdeImageIntoTiles(self,image_path,tiles_path,rows = 6,colums = 12):
             #image = cv2.imread(image_path)
             pass
+    def imageToVideo(self,image_path,video_path):
+        
+        fourcc = cv2.VideoWriter_fourcc(*'XVID')
+        video_fps = 10
+        image = cv2.imread(image_path+str(1)+".png")
+        image_res = self.getImageResolution(image)
+        cap = cv2.VideoWriter(video_path,fourcc,video_fps,image_res)
+        
+        
+        for path in range(1,204):
+            #print(path)
+            image  = cv2.imread(image_path+str(path)+".png")
+            cap.write(image)
+        cap.release()   
         
 video = VideoProcess()
+image_path = "F:\\project\\python\\AR/xyz"
+video_path = "F:\\project\\python\\CV/cluster.mp4"
+video.imageToVideo(image_path,video_path)
 #print(result)
-#video.divideVedioIntoChips(video_path)
-for i in range(1,165):
-   video.divideSegmentIntoTiles(i)
         
